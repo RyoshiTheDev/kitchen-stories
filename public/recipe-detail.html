@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Details - My Kitchen Stories</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600&family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #FFF8F0;
+            --warm-tan: #E8D5C4;
+            --terracotta: #D4745E;
+            --deep-brown: #2C1810;
+            --olive: #8B9556;
+            --sage: #B4C2A8;
+            --text-primary: #2C1810;
+            --text-secondary: #6B5544;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Pro', serif;
+            background: var(--cream);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(212, 116, 94, 0.02) 2px, rgba(212, 116, 94, 0.02) 4px),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(139, 149, 86, 0.02) 2px, rgba(139, 149, 86, 0.02) 4px);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: white;
+            border: 2px solid var(--warm-tan);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+        }
+
+        .back-button:hover {
+            background: var(--terracotta);
+            color: white;
+            border-color: var(--terracotta);
+            transform: translateX(-4px);
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 60vh;
+            object-fit: cover;
+            opacity: 0;
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .hero-placeholder {
+            width: 100%;
+            height: 60vh;
+            background: linear-gradient(135deg, var(--warm-tan) 0%, var(--sage) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: -4rem auto 0;
+            padding: 0 2rem 4rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .recipe-header {
+            background: white;
+            padding: 3rem;
+            border-radius: 4px;
+            box-shadow: 0 8px 32px rgba(44, 24, 16, 0.12);
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: slideUp 0.8s ease 0.2s forwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .recipe-category {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--terracotta);
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .recipe-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 900;
+            color: var(--deep-brown);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .recipe-description {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .recipe-meta-bar {
+            display: flex;
+            gap: 3rem;
+            padding: 1.5rem 0;
+            border-top: 2px solid var(--warm-tan);
+            border-bottom: 2px solid var(--warm-tan);
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .meta-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+        }
+
+        .meta-value {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--deep-brown);
+        }
+
+        .recipe-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 4px;
+            box-shadow: 0 8px 32px rgba(44, 24, 16, 0.12);
+            opacity: 0;
+            animation: slideUp 0.8s ease 0.4s forwards;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--terracotta);
+            margin-bottom: 1.5rem;
+            margin-top: 2.5rem;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .ingredients-list {
+            list-style: none;
+        }
+
+        .ingredient-group h4 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--olive);
+            margin: 2rem 0 1rem;
+            font-weight: 500;
+        }
+
+        .ingredient-group:first-child h4 {
+            margin-top: 0;
+        }
+
+        .ingredients-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--warm-tan);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: baseline;
+        }
+
+        .ingredients-list li::before {
+            content: '✓';
+            color: var(--olive);
+            margin-right: 1rem;
+            font-weight: 600;
+        }
+
+        .instructions-list {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .instructions-list li {
+            counter-increment: step-counter;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--warm-tan);
+            position: relative;
+            padding-left: 4rem;
+        }
+
+        .instructions-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 1.5rem;
+            width: 2.5rem;
+            height: 2.5rem;
+            background: var(--terracotta);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .instructions-list li p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        .notes-section {
+            background: var(--warm-tan);
+            padding: 2rem;
+            border-radius: 4px;
+            margin-top: 2.5rem;
+        }
+
+        .notes-section h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--deep-brown);
+            margin-bottom: 1rem;
+        }
+
+        .notes-section p {
+            font-size: 1rem;
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--terracotta);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #C96652;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 116, 94, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--terracotta);
+            border: 2px solid var(--terracotta);
+        }
+
+        .btn-secondary:hover {
+            background: var(--terracotta);
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin-top: -2rem;
+            }
+
+            .recipe-header,
+            .recipe-content {
+                padding: 2rem;
+            }
+
+            .recipe-meta-bar {
+                flex-wrap: wrap;
+                gap: 1.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .back-button {
+                top: 1rem;
+                left: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-button">←</a>
+
+    <div id="heroImage"></div>
+
+    <div class="container">
+        <div class="recipe-header" id="recipeHeader">
+            <!-- Recipe header will be dynamically populated -->
+        </div>
+
+        <div class="recipe-content" id="recipeContent">
+            <!-- Recipe content will be dynamically populated -->
+        </div>
+    </div>
+
+    <footer>
+        <p>Made with ❤️ in my kitchen | © 2026 My Kitchen Stories</p>
+    </footer>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        
+        // Extended recipe data with full details (fallback - will be replaced by API data)
+        const recipesData = {
+            1: {
+                id: 1,
+                title: "Fluffy Buttermilk Pancakes",
+                category: "Breakfast",
+                description: "Light, airy pancakes with a golden exterior and tender interior. Perfect weekend breakfast tradition.",
+                time: "25 mins",
+                servings: "4 servings",
+                difficulty: "Easy",
+                prepTime: "10 mins",
+                cookTime: "15 mins",
+                image: "",
+                ingredients: [
+                    {
+                        group: "Dry Ingredients",
+                        items: [
+                            "2 cups all-purpose flour",
+                            "2 tablespoons sugar",
+                            "2 teaspoons baking powder",
+                            "1 teaspoon baking soda",
+                            "1/2 teaspoon salt"
+                        ]
+                    },
+                    {
+                        group: "Wet Ingredients",
+                        items: [
+                            "2 cups buttermilk",
+                            "2 large eggs",
+                            "1/4 cup melted butter",
+                            "1 teaspoon vanilla extract"
+                        ]
+                    }
+                ],
+                instructions: [
+                    "In a large bowl, whisk together flour, sugar, baking powder, baking soda, and salt.",
+                    "In a separate bowl, whisk together buttermilk, eggs, melted butter, and vanilla extract.",
+                    "Pour wet ingredients into dry ingredients and gently fold together until just combined. Don't overmix – some lumps are okay.",
+                    "Heat a griddle or large skillet over medium heat. Lightly grease with butter.",
+                    "Pour 1/4 cup batter for each pancake. Cook until bubbles form on the surface, about 2-3 minutes.",
+                    "Flip and cook until golden brown on the other side, about 1-2 minutes more.",
+                    "Serve immediately with butter and maple syrup."
+                ],
+                notes: "For extra fluffy pancakes, let the batter rest for 5 minutes before cooking. You can also add blueberries or chocolate chips to the batter for variation."
+            },
+            2: {
+                id: 2,
+                title: "Garlic Herb Roasted Chicken",
+                category: "Dinner",
+                description: "Juicy roasted chicken infused with fresh herbs and garlic. A family favorite that never disappoints.",
+                time: "90 mins",
+                servings: "6 servings",
+                difficulty: "Medium",
+                prepTime: "15 mins",
+                cookTime: "75 mins",
+                image: "",
+                ingredients: [
+                    {
+                        group: "Main",
+                        items: [
+                            "1 whole chicken (4-5 lbs)",
+                            "6 cloves garlic, minced",
+                            "2 tablespoons olive oil",
+                            "2 tablespoons butter, softened",
+                            "1 lemon, halved"
+                        ]
+                    },
+                    {
+                        group: "Herbs & Seasoning",
+                        items: [
+                            "2 tablespoons fresh rosemary, chopped",
+                            "2 tablespoons fresh thyme",
+                            "1 tablespoon fresh sage, chopped",
+                            "2 teaspoons salt",
+                            "1 teaspoon black pepper"
+                        ]
+                    }
+                ],
+                instructions: [
+                    "Preheat oven to 425°F (220°C). Pat chicken dry with paper towels.",
+                    "In a small bowl, mix together garlic, olive oil, butter, rosemary, thyme, sage, salt, and pepper.",
+                    "Gently loosen the skin from the chicken breast and thighs. Spread half the herb mixture under the skin.",
+                    "Rub remaining herb mixture all over the outside of the chicken. Place lemon halves inside the cavity.",
+                    "Tie legs together with kitchen twine and tuck wing tips under the body.",
+                    "Place chicken breast-side up in a roasting pan. Roast for 60-75 minutes until internal temperature reaches 165°F.",
+                    "Let rest for 10-15 minutes before carving. Serve with pan juices."
+                ],
+                notes: "The key to crispy skin is starting with a completely dry chicken. Make sure to pat it thoroughly with paper towels before seasoning."
+            },
+            3: {
+                id: 3,
+                title: "Classic Chocolate Chip Cookies",
+                category: "Dessert",
+                description: "Crispy edges with a chewy center. The ultimate comfort food from grandma's recipe box.",
+                time: "30 mins",
+                servings: "24 cookies",
+                difficulty: "Easy",
+                prepTime: "15 mins",
+                cookTime: "12 mins",
+                image: "",
+                ingredients: [
+                    {
+                        group: "",
+                        items: [
+                            "2 1/4 cups all-purpose flour",
+                            "1 teaspoon baking soda",
+                            "1 teaspoon salt",
+                            "1 cup (2 sticks) butter, softened",
+                            "3/4 cup granulated sugar",
+                            "3/4 cup packed brown sugar",
+                            "2 large eggs",
+                            "2 teaspoons vanilla extract",
+                            "2 cups chocolate chips"
+                        ]
+                    }
+                ],
+                instructions: [
+                    "Preheat oven to 375°F (190°C). Line baking sheets with parchment paper.",
+                    "In a medium bowl, whisk together flour, baking soda, and salt.",
+                    "In a large bowl, cream together softened butter, granulated sugar, and brown sugar until light and fluffy, about 3 minutes.",
+                    "Beat in eggs one at a time, then add vanilla extract.",
+                    "Gradually mix in the flour mixture until just combined.",
+                    "Fold in chocolate chips.",
+                    "Drop rounded tablespoons of dough onto prepared baking sheets, spacing 2 inches apart.",
+                    "Bake for 10-12 minutes until edges are golden brown. Centers will look slightly underdone.",
+                    "Cool on baking sheet for 5 minutes before transferring to a wire rack."
+                ],
+                notes: "For chewier cookies, slightly underbake them. For crispier cookies, bake an extra 1-2 minutes. Cookies will continue to cook on the hot baking sheet after removing from oven."
+            },
+            4: {
+                id: 4,
+                title: "Mediterranean Quinoa Bowl",
+                category: "Lunch",
+                description: "Fresh, vibrant bowl packed with vegetables, herbs, and a tangy lemon dressing.",
+                time: "20 mins",
+                servings: "2 servings",
+                difficulty: "Easy",
+                prepTime: "10 mins",
+                cookTime: "15 mins",
+                image: "",
+                ingredients: [
+                    {
+                        group: "Bowl",
+                        items: [
+                            "1 cup quinoa, uncooked",
+                            "2 cups water",
+                            "1 cucumber, diced",
+                            "2 tomatoes, diced",
+                            "1/2 red onion, finely diced",
+                            "1 cup chickpeas, drained and rinsed",
+                            "1/2 cup kalamata olives, halved",
+                            "1/2 cup feta cheese, crumbled",
+                            "1/4 cup fresh parsley, chopped"
+                        ]
+                    },
+                    {
+                        group: "Lemon Dressing",
+                        items: [
+                            "3 tablespoons olive oil",
+                            "2 tablespoons lemon juice",
+                            "1 clove garlic, minced",
+                            "1 teaspoon dried oregano",
+                            "Salt and pepper to taste"
+                        ]
+                    }
+                ],
+                instructions: [
+                    "Rinse quinoa thoroughly. In a medium pot, bring quinoa and water to a boil.",
+                    "Reduce heat to low, cover, and simmer for 15 minutes until water is absorbed. Remove from heat and let stand 5 minutes covered.",
+                    "Fluff quinoa with a fork and let cool slightly.",
+                    "While quinoa cooks, prepare vegetables and place in a large bowl.",
+                    "In a small bowl, whisk together all dressing ingredients.",
+                    "Add cooled quinoa to the vegetable bowl.",
+                    "Pour dressing over and toss to combine.",
+                    "Top with feta cheese and fresh parsley. Serve immediately or chill."
+                ],
+                notes: "This bowl tastes even better after sitting for 30 minutes as the flavors meld together. Can be made ahead and stored in the refrigerator for up to 3 days."
+            },
+            5: {
+                id: 5,
+                title: "Homemade Pasta Carbonara",
+                category: "Dinner",
+                description: "Silky, creamy pasta with crispy pancetta. A taste of Rome in your own kitchen.",
+                time: "35 mins",
+                servings: "4 servings",
+                difficulty: "Medium",
+                prepTime: "10 mins",
+                cookTime: "20 mins",
+                image: "",
+                ingredients: [
+                    {
+                        group: "",
+                        items: [
+                            "1 pound spaghetti",
+                            "6 oz pancetta or bacon, diced",
+                            "4 large eggs",
+                            "1 cup Pecorino Romano cheese, freshly grated",
+                            "1/2 cup Parmesan cheese, freshly grated",
+                            "2 cloves garlic, minced",
+                            "Black pepper, freshly ground",
+                            "Salt for pasta water"
+                        ]
+                    }
+                ],
+                instructions: [
+                    "Bring a large pot of salted water to boil. Cook spaghetti according to package directions until al dente. Reserve 2 cups pasta water before draining.",
+                    "While pasta cooks, cook pancetta in a large skillet over medium heat until crispy, about 8 minutes. Add garlic and cook 1 minute more. Remove from heat.",
+                    "In a bowl, whisk together eggs, Pecorino Romano, and Parmesan cheese. Add plenty of freshly ground black pepper.",
+                    "Add hot drained pasta to the skillet with pancetta (off heat). Toss to coat.",
+                    "Working quickly, pour egg mixture over pasta and toss vigorously. The residual heat will cook the eggs into a creamy sauce.",
+                    "Add reserved pasta water, a little at a time, until you reach desired creaminess.",
+                    "Serve immediately with extra cheese and black pepper."
+                ],
+                notes: "The key is to work off heat when adding the eggs to prevent scrambling. The heat from the pasta will gently cook the eggs into a silky sauce. Never add cream – traditional carbonara uses only eggs and cheese for creaminess."
+            },
+            6: {
+                id: 6,
+                title: "Lemon Lavender Cake",
+                category: "Dessert",
+                description: "Delicate citrus cake with subtle floral notes. Beautiful for spring celebrations.",
+                time: "60 mins",
+                servings: "8 servings",
+                difficulty: "Medium",
+                prepTime: "20 mins",
+                cookTime: "35 mins",
+                image: "",
+                ingredients: [
+                    {
+                        group: "Cake",
+                        items: [
+                            "2 cups all-purpose flour",
+                            "1 1/2 teaspoons baking powder",
+                            "1/2 teaspoon salt",
+                            "3/4 cup butter, softened",
+                            "1 1/2 cups sugar",
+                            "3 large eggs",
+                            "2 tablespoons dried culinary lavender",
+                            "Zest of 2 lemons",
+                            "1/4 cup fresh lemon juice",
+                            "3/4 cup milk"
+                        ]
+                    },
+                    {
+                        group: "Lemon Glaze",
+                        items: [
+                            "2 cups powdered sugar",
+                            "3 tablespoons lemon juice",
+                            "1 tablespoon milk",
+                            "1/2 teaspoon lavender, finely ground"
+                        ]
+                    }
+                ],
+                instructions: [
+                    "Preheat oven to 350°F (175°C). Grease and flour a 9-inch round cake pan.",
+                    "In a bowl, whisk together flour, baking powder, and salt.",
+                    "Grind lavender flowers finely using a mortar and pestle or spice grinder.",
+                    "In a large bowl, cream butter and sugar until light and fluffy. Add ground lavender and lemon zest.",
+                    "Beat in eggs one at a time, mixing well after each addition.",
+                    "In a small bowl, combine lemon juice and milk.",
+                    "Add flour mixture to butter mixture in three additions, alternating with lemon-milk mixture. Begin and end with flour.",
+                    "Pour batter into prepared pan. Bake 35-40 minutes until a toothpick inserted in center comes out clean.",
+                    "Cool in pan 10 minutes, then turn out onto a wire rack to cool completely.",
+                    "For glaze, whisk together powdered sugar, lemon juice, milk, and ground lavender. Drizzle over cooled cake."
+                ],
+                notes: "Use culinary lavender only – it's safe for consumption and has the right flavor. If you can't find it, you can make this as a lemon cake and it will still be delicious."
+            }
+        };
+
+        // Get recipe ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const recipeId = parseInt(urlParams.get('id')) || 1;
+        
+        // Fetch recipe from API
+        async function fetchRecipe() {
+            try {
+                const response = await fetch(`${API_URL}/recipes/${recipeId}`);
+                if (!response.ok) throw new Error('Recipe not found');
+                
+                const recipe = await response.json();
+                renderRecipe(recipe);
+            } catch (error) {
+                console.error('Error fetching recipe:', error);
+                // Fallback to local data
+                const recipe = recipesData[recipeId];
+                if (recipe) {
+                    renderRecipe(recipe);
+                } else {
+                    document.querySelector('.container').innerHTML = `
+                        <div style="text-align: center; padding: 4rem;">
+                            <h2 style="color: var(--terracotta); font-family: 'Playfair Display', serif;">Recipe not found</h2>
+                            <p style="color: var(--text-secondary); margin: 1rem 0;">The recipe you're looking for doesn't exist.</p>
+                            <a href="index.html" style="color: var(--terracotta);">← Back to recipes</a>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Render recipe details
+        function renderRecipe(recipe) {
+            // Render hero image
+            const heroImage = document.getElementById('heroImage');
+            if (recipe.image_url || recipe.image) {
+                const imageUrl = recipe.image_url || recipe.image;
+                heroImage.innerHTML = `<img src="${imageUrl}" alt="${recipe.title}" class="hero-image">`;
+            } else {
+                heroImage.innerHTML = `<div class="hero-placeholder">Add your recipe image</div>`;
+            }
+
+            // Render header
+            const header = document.getElementById('recipeHeader');
+            const prepTime = recipe.prep_time || recipe.prepTime || '';
+            const cookTime = recipe.cook_time || recipe.cookTime || '';
+            
+            header.innerHTML = `
+                <span class="recipe-category">${recipe.category}</span>
+                <h1 class="recipe-title">${recipe.title}</h1>
+                <p class="recipe-description">${recipe.description}</p>
+                <div class="recipe-meta-bar">
+                    <div class="meta-item">
+                        <span class="meta-label">Prep Time</span>
+                        <span class="meta-value">${prepTime}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Cook Time</span>
+                        <span class="meta-value">${cookTime}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Servings</span>
+                        <span class="meta-value">${recipe.servings}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Difficulty</span>
+                        <span class="meta-value">${recipe.difficulty}</span>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="window.print()">Print Recipe</button>
+                    <button class="btn btn-secondary" onclick="window.location.href='edit-recipe.html?id=${recipe.id}'">Edit Recipe</button>
+                </div>
+            `;
+
+            // Render content
+            const content = document.getElementById('recipeContent');
+            
+            let ingredientsHTML = '<h2 class="section-title">Ingredients</h2><div class="ingredients-list">';
+            recipe.ingredients.forEach(group => {
+                if (group.group) {
+                    ingredientsHTML += `<div class="ingredient-group"><h4>${group.group}</h4><ul>`;
+                } else {
+                    ingredientsHTML += '<ul>';
+                }
+                group.items.forEach(item => {
+                    ingredientsHTML += `<li>${item}</li>`;
+                });
+                ingredientsHTML += '</ul>';
+                if (group.group) {
+                    ingredientsHTML += '</div>';
+                }
+            });
+            ingredientsHTML += '</div>';
+
+            let instructionsHTML = '<h2 class="section-title">Instructions</h2><ol class="instructions-list">';
+            recipe.instructions.forEach(step => {
+                instructionsHTML += `<li><p>${step}</p></li>`;
+            });
+            instructionsHTML += '</ol>';
+
+            let notesHTML = '';
+            if (recipe.notes) {
+                notesHTML = `
+                    <div class="notes-section">
+                        <h3>Chef's Notes</h3>
+                        <p>${recipe.notes}</p>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = ingredientsHTML + instructionsHTML + notesHTML;
+        }
+
+        // Render the recipe
+        fetchRecipe();
+    </script>
+</body>
+</html>
